@@ -61,7 +61,6 @@ struct ClipboardRowView: View {
 }
 
 struct ClipboardView: View {
-    @StateObject private var licenseManager = LicenseManager.shared
     @AppStorage("sort_asc") private var sortAscending: Bool = UserDefaultsManager.shared.getSortAsc()
     
     @ObservedResults(ClipboardItem.self, sortDescriptor: SortDescriptor(keyPath: "timestamp", ascending: true)) var clipboardItems
@@ -162,27 +161,6 @@ struct ClipboardView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Trial Indicator
-         
-            if case .trial(let daysRemaining) = licenseManager.licenseStatus, daysRemaining > 0 {
-                HStack(spacing: 8) {
-                    Image(systemName: "hourglass")
-                        .foregroundColor(.blue)
-                    Text("Trial: \(daysRemaining) day\(daysRemaining == 1 ? "" : "s") left")
-                        .font(.caption)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.blue)
-                    Spacer()
-                    Button("Activate") {
-                        NotificationCenter.default.post(name: NSNotification.Name("ShowActivation"), object: nil)
-                    }
-                    .buttonStyle(.borderedProminent)
-                }
-                .padding(10)
-                .background(Color.blue.opacity(0.08))
-                .cornerRadius(10)
-                .padding([.horizontal, .top], 12)
-            }
             // Icon
             HStack {
                 Spacer()

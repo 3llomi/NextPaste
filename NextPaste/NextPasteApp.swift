@@ -12,7 +12,6 @@ import KeyboardShortcuts
 @main
 struct NextPasteApp: SwiftUI.App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-    @StateObject private var licenseManager = LicenseManager.shared
     @State private var showWalkthrough = !UserDefaults.standard.bool(forKey: "hasSeenWalkthrough")
     
     var body: some Scene {
@@ -69,18 +68,7 @@ let realm = try! Realm(configuration: config)
 var appDelegateRef: AppDelegate?
 
 class AppDelegate: NSObject, NSApplicationDelegate {
-    // Listen for ShowActivation notification to open Preferences > License > Activation
-    override init() {
-        super.init()
-        NotificationCenter.default.addObserver(self, selector: #selector(showLicenseActivationFromNotification), name: NSNotification.Name("ShowActivation"), object: nil)
-    }
-
-    @objc private func showLicenseActivationFromNotification() {
-        // Open Preferences window
-        self.showPreferences()
-        // Post notification to select License tab and show activation sheet
-        NotificationCenter.default.post(name: NSNotification.Name("ShowLicenseActivationSheet"), object: nil)
-    }
+    
     private var localEventMonitor: Any?
     private var pasateboardWatcher: PasteboardWatcher?
     var clipboardWindow: NSWindow?
@@ -91,23 +79,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var pasteOperationCount = 0
     private let pasteOperationLock = NSLock()
     
-    // Helper function to check if license is valid
-    private func isLicenseValid() -> Bool {
-//        let licenseStatus = LicenseManager.shared.licenseStatus
-//        switch licenseStatus {
-//        case .activated:
-//            return true
-//        case .trial(let days):
-//            return days > 0
-//        default:
-//            return false
-//        }
-        return LicenseManager.shared.isActive
-    }
-    
     // Helper function to disable all global shortcuts
     func disableGlobalShortcuts() {
-        print("⛔ Disabling global shortcuts - license not activated")
+        print("⛔ Disabling global shortcuts")
         KeyboardShortcuts.disable(.clipboardHistory)
         KeyboardShortcuts.disable(.toggleActionsPanel)
         KeyboardShortcuts.disable(.quickPaste1)
@@ -126,7 +100,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     // Helper function to enable all global shortcuts
     func enableGlobalShortcuts() {
-        print("✓ Enabling global shortcuts - license activated")
+        print("✓ Enabling global shortcuts")
         KeyboardShortcuts.enable(.clipboardHistory)
         KeyboardShortcuts.enable(.toggleActionsPanel)
         KeyboardShortcuts.enable(.quickPaste1)
@@ -143,82 +117,32 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         KeyboardShortcuts.enable(.pasteBackwards)
     }
     
-    // Update shortcuts based on license status
-    func updateShortcutsForLicenseStatus() {
-        if isLicenseValid() {
-            enableGlobalShortcuts()
-        } else {
-            disableGlobalShortcuts()
-        }
+    // Update shortcuts
+    func updateShortcuts() {
+        enableGlobalShortcuts()
     }
     
     // Helper function to show menu bar
     func showMenuBar() {
         guard statusItem == nil else { return }
-        print("✓ Showing menu bar - license activated")
+        print("✓ Showing menu bar")
         setupMenuBar()
     }
     
-    // Helper function to hide menu bar
+    // Hide menu bar
     func hideMenuBar() {
         guard let statusItem = statusItem else { return }
-        print("⛔ Hiding menu bar - license not activated")
+        print("⛔ Hiding menu bar")
         NSStatusBar.system.removeStatusItem(statusItem)
         self.statusItem = nil
     }
     
-    // Update menu bar visibility based on license status
-    func updateMenuBarForLicenseStatus() {
-        if isLicenseValid() {
-            showMenuBar()
-        } else {
-            hideMenuBar()
-        }
-    }
-    
     // Show walkthrough window
     private var walkthroughWindow: NSWindow?
-    private var activationWindow: NSWindow?
     
     func closeWalkthroughWindow(){
         walkthroughWindow?.close()
         walkthroughWindow = nil
-    }
-    
-    
-    func showActivationWindow() {
-        guard activationWindow == nil else { return }
-        
-        let activationView = ActivationView().frame(width: 700, height: 580)
-        let hostingView = NSHostingView(rootView: activationView)
-        
-        let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 700, height: 550),
-            styleMask: [.titled, .closable, .miniaturizable],
-            backing: .buffered,
-            defer: false
-        )
-        
-        window.title = "Activate NextPaste"
-        window.titlebarAppearsTransparent = true
-        window.contentView = hostingView
-        window.center()
-        window.makeKeyAndOrderFront(nil)
-        window.isReleasedWhenClosed = false
-
-        self.activationWindow = window
-        
-        // Observe window close
-        NotificationCenter.default.addObserver(
-            forName: NSWindow.willCloseNotification,
-            object: window,
-            queue: .main
-        ) { [weak self] _ in
-            self?.activationWindow = nil
-            
-                NSApp.setActivationPolicy(.accessory)
-            
-        }
     }
     
     func showWalkthroughWindow(with isPresented: Binding<Bool>) {
@@ -271,14 +195,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         print("applicationDidFinishLaunching")
         
-        // TESTING: Uncomment the line below to reset license data and test activation flow
-        // resetLicenseData()
-        
         // Always start in accessory mode (menu bar only, no Dock icon)
-//        NSApp.setActivationPolicy(.accessory)
-        if LicenseManager.shared.isActive{
-            NSApp.setActivationPolicy(.accessory)
-        }
+        NSApp.setActivationPolicy(.accessory)
         print("✓ App launched in accessory mode (menu bar only)")
         
         
@@ -286,30 +204,25 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         initializeDefaultExcludedApps()
         setupKeyboardShortcuts()
         
-        // Update shortcuts and menu bar based on license status
-        updateShortcutsForLicenseStatus()
-        updateMenuBarForLicenseStatus()
+        // Update shortcuts and menu bar
+        enableGlobalShortcuts()
+        showMenuBar()
         
         pasateboardWatcher = PasteboardWatcher(fileKinds: [])
         pasateboardWatcher?.delegate = self
         
         // Don't start polling here - only start when clipboard window is visible
-        // But if license is valid and copyWhenHidden is enabled, start monitoring
+        // But if copyWhenHidden is enabled, start monitoring
         let copyWhenHidden = UserDefaults.standard.bool(forKey: "copyWhenHidden") || UserDefaults.standard.object(forKey: "copyWhenHidden") == nil
         
-        if isLicenseValid() && copyWhenHidden {
+        if copyWhenHidden {
             print("✓ Starting pasteboard monitoring (copyWhenHidden enabled)")
             pasateboardWatcher?.startPolling()
-        } else if !isLicenseValid() {
-            print("⛔ Pasteboard monitoring disabled - license not activated or expired")
         }
         setupClipboardWindowVisibilityObservers()
         
         // Start cleanup timer - runs every hour to remove items older than 1 week
         startCleanupTimer()
-        
-        // Start periodic license/trial revocation check (every 12 hours)
-        LicenseManager.shared.startRevocationCheck()
         
         // Show walkthrough on first launch
         let hasSeenWalkthrough = UserDefaults.standard.bool(forKey: "hasSeenWalkthrough")
@@ -323,8 +236,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 )
                 self?.showWalkthroughWindow(with: binding)
             }
-        }else if !isLicenseValid(){
-            showActivationWindow()
         }
     }
     
@@ -339,9 +250,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Stop cleanup timer
         cleanupTimer?.invalidate()
         cleanupTimer = nil
-        
-        // Stop license revocation check
-        LicenseManager.shared.stopRevocationCheck()
     }
     
     // Prevent window restoration and auto-opening on launch
@@ -894,12 +802,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     
     func pasteCopiedItem(at index: Int,completion: @escaping () -> () = {}) {
-        // Check license status first
-        guard isLicenseValid() else {
-            print("⛔ Paste operations blocked - license not activated or expired")
-            return
-        }
-        
         // Get the current sort order preference
         let sortAscending = UserDefaultsManager.shared.getSortAsc()
         let sequentialPasteNewline = UserDefaultsManager.shared.getSequentialPasteNewLine()
@@ -959,12 +861,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
    
     func pasteCopiedItemAndDelete(at index: Int,backwards:Bool, completion: @escaping () -> () = {}) {
-        // Check license status first
-        guard isLicenseValid() else {
-            print("⛔ Paste & delete operations blocked - license not activated or expired")
-            return
-        }
-        
         // Get the current sort order preference
         let sortAscendingSetting = UserDefaultsManager.shared.getSortAsc()
         let sortAscending = backwards ? !sortAscendingSetting : sortAscendingSetting
@@ -1029,14 +925,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     @objc func toggleClipboardHistoryWindow() {
-        // Check license status first
-        guard isLicenseValid() else {
-            print("⛔ Clipboard window blocked - license not activated or expired")
-            // Show activation window instead
-            // NSApplication.shared.activate(ignoringOtherApps: true)
-            return
-        }
-        
         // Check Accessibility Permission
         let acc = AccessibilityService()
         guard acc.isAccessibilityEnabled(isPrompt: false) else {
@@ -1070,10 +958,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
     private func setupClipboardWindowVisibilityObservers() {
-        NotificationCenter.default.addObserver(forName: NSNotification.Name("ClipboardWindowDidShow"), object: nil, queue: .main) {[weak self] _ in
-            guard ((self?.isLicenseValid()) != nil) else {
-                return
-            }
+        NotificationCenter.default.addObserver(forName: NSNotification.Name("ClipboardWindowDidShow"), object: nil, queue: .main) { _ in
             KeyboardShortcuts.enable(.toggleActionsPanel)
         }
         NotificationCenter.default.addObserver(forName: NSNotification.Name("ClipboardWindowDidHide"), object: nil, queue: .main) { _ in
@@ -1144,12 +1029,6 @@ extension AppDelegate: PasteboardWatcherDelegate {
         // Don't process clipboard changes during paste operations
         if isPasting {
             print("🚫 Ignoring clipboard change during paste operation")
-            return
-        }
-        
-        // Check license status first
-        guard isLicenseValid() else {
-            print("⛔ Clipboard operations blocked - license not activated or expired")
             return
         }
         
@@ -1643,24 +1522,12 @@ struct PreferencesWindow: View {
                     .tag(2)
 
             
-            // License Tab
-            LicenseSettingsTab()
-                .tabItem {
-                    Label("License", systemImage: "key.fill")
-                }
-                .tag(3)
-            
             // About Tab
             AboutTab()
                 .tabItem {
                     Label("About", systemImage: "info.circle")
                 }
                 .tag(4)
-        }
-        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ShowLicenseActivationSheet"))) { _ in
-            selectedTab = 3
-            // Post notification to LicenseSettingsTab to show activation sheet
-            NotificationCenter.default.post(name: NSNotification.Name("ShowActivationSheet"), object: nil)
         }
         }
 //        .frame(width: 500, height: 550)
@@ -1815,323 +1682,8 @@ struct FeatureRow: View {
     }
 }
 
-struct LicenseSettingsTab: View {
-    @StateObject private var licenseManager = LicenseManager.shared
-    @State private var showingActivationSheet = false
-    @State private var statusMessage = ""
-    
-    var body: some View {
-      
-        VStack(alignment: .leading, spacing: 0) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("License & Trial")
-                    .font(.headline)
-                Text("Manage your NextPaste license and trial status")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            .padding()
-            
-            Divider()
-            
-            ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    // Current License Status
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Current Status")
-                            .font(.subheadline)
-                            .fontWeight(.semibold)
-                        
-                        switch licenseManager.licenseStatus {
-                        case .activated:
-                            HStack(spacing: 12) {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .font(.system(size: 20))
-                                    .foregroundColor(.green)
-                                
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text("License Activated")
-                                        .font(.body)
-                                        .fontWeight(.semibold)
-                                    
-                                    Text("Your NextPaste license is fully activated")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                }
-                                
-                                Spacer()
-                            }
-                            .padding(.vertical, 12)
-                            .padding(.horizontal, 12)
-                            .background(Color.green.opacity(0.1))
-                            .cornerRadius(8)
-                            
-                        case .trial(let daysRemaining):
-                            if daysRemaining > 0 {
-                                HStack(spacing: 12) {
-                                    Image(systemName: "hourglass")
-                                        .font(.system(size: 20))
-                                        .foregroundColor(.blue)
-                                    
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text("Trial Active")
-                                            .font(.body)
-                                            .fontWeight(.semibold)
-                                        
-                                        Text("\(daysRemaining) day\(daysRemaining == 1 ? "" : "s") remaining")
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                    }
-                                    
-                                    Spacer()
-                                    
-                                    // Progress indicator
-                                    let totalDays = 14
-                                    let progress = Double(totalDays - daysRemaining) / Double(totalDays)
-                                    ZStack(alignment: .trailing) {
-                                        RoundedRectangle(cornerRadius: 4)
-                                            .fill(Color.blue.opacity(0.2))
-                                        
-                                        RoundedRectangle(cornerRadius: 4)
-                                            .fill(Color.blue)
-                                            .frame(width: 40 * progress)
-                                    }
-                                    .frame(width: 40, height: 4)
-                                }
-                                .padding(.vertical, 12)
-                                .padding(.horizontal, 12)
-                                .background(Color.blue.opacity(0.1))
-                                .cornerRadius(8)
-                            } else {
-                                HStack(spacing: 12) {
-                                    Image(systemName: "exclamationmark.circle.fill")
-                                        .font(.system(size: 20))
-                                        .foregroundColor(.orange)
-                                    
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text("Trial Expired")
-                                            .font(.body)
-                                            .fontWeight(.semibold)
-                                        
-                                        Text("Your trial has ended")
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                    }
-                                    
-                                    Spacer()
-                                }
-                                .padding(.vertical, 12)
-                                .padding(.horizontal, 12)
-                                .background(Color.orange.opacity(0.1))
-                                .cornerRadius(8)
-                            }
-                            
-                        case .expired, .invalid, .noTrial:
-                            HStack(spacing: 12) {
-                                Image(systemName: "xmark.circle.fill")
-                                    .font(.system(size: 20))
-                                    .foregroundColor(.red)
-                                
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text("License Required")
-                                        .font(.body)
-                                        .fontWeight(.semibold)
-                                    
-                                    Text("Activate a license or start a trial to use NextPaste")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                }
-                                
-                                Spacer()
-                            }
-                            .padding(.vertical, 12)
-                            .padding(.horizontal, 12)
-                            .background(Color.red.opacity(0.1))
-                            .cornerRadius(8)
-                        }
-                    }
-                    
-                    Divider()
-                        .padding(.vertical, 8)
-                    
-                    // License Key Activation
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Activate with License Key")
-                            .font(.subheadline)
-                            .fontWeight(.semibold)
-                        
-                        Text("Enter your NextPaste license key to activate")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        
-                        if case .activated = licenseManager.licenseStatus {
-                            Button(action: {}) {
-                                HStack {
-                                    Image(systemName: "checkmark")
-                                    Text("License Already Activated")
-                                }
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 10)
-                            }
-                            .buttonStyle(.bordered)
-                            .disabled(true)
-                        } else {
-                            Button(action: { showingActivationSheet = true }) {
-                                HStack {
-                                    Image(systemName: "key.fill")
-                                    Text("Activate")
-                                }
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 10)
-                            }
-                            .buttonStyle(.bordered)
-                        }
-                    }
-                    
-                    // Status Message
-                    if !statusMessage.isEmpty {
-                        HStack(spacing: 8) {
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundColor(.green)
-                            Text(statusMessage)
-                                .font(.caption)
-                            Spacer()
-                        }
-                        .padding(.vertical, 8)
-                        .padding(.horizontal, 12)
-                        .background(Color.green.opacity(0.1))
-                        .cornerRadius(6)
-                        .transition(.opacity)
-                    }
-                    
-                    Spacer()
-                }
-                .padding()
-            }
-        }
-        .sheet(isPresented: $showingActivationSheet) {
-            ActivationView()
-        }
-        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ShowActivationSheet"))) { _ in
-            showingActivationSheet = true
-        }
-        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("HideActivationSheet"))) { _ in
-            showingActivationSheet = false
-        }
-    }
-}
 
-struct LicenseKeyInputSheet: View {
-    @Binding var isPresented: Bool
-    @Binding var licenseKeyInput: String
-    @ObservedObject var licenseManager: LicenseManager
-    @Binding var statusMessage: String
-    @State private var isLoading = false
-    @State private var errorMessage = ""
-    @State private var emailInput = ""
-    
-    var body: some View {
-        VStack(spacing: 16) {
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Enter License Key")
-                    .font(.headline)
-                
-                Text("Paste your NextPaste license key to activate your account")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            
-            TextField("Email Address", text: $emailInput)
-                .textFieldStyle(.roundedBorder)
-            
-            SecureField("License Key", text: $licenseKeyInput)
-                .textFieldStyle(.roundedBorder)
-                .font(.monospaced(.body)())
-            
-            if !errorMessage.isEmpty {
-                HStack(spacing: 8) {
-                    Image(systemName: "exclamationmark.circle.fill")
-                        .foregroundColor(.red)
-                    Text(errorMessage)
-                        .font(.caption)
-                    Spacer()
-                }
-                .padding(.vertical, 8)
-                .padding(.horizontal, 12)
-                .background(Color.red.opacity(0.1))
-                .cornerRadius(6)
-            }
-            
-            HStack(spacing: 12) {
-                Button(action: { isPresented = false }) {
-                    Text("Cancel")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.bordered)
-                
-                Button(action: activateLicense) {
-                    if isLoading {
-                        HStack(spacing: 6) {
-                            ProgressView()
-                                .scaleEffect(0.8)
-                            Text("Activating...")
-                        }
-                        .frame(maxWidth: .infinity)
-                    } else {
-                        Text("Activate")
-                            .frame(maxWidth: .infinity)
-                    }
-                }
-                .buttonStyle(.borderedProminent)
-                .disabled(licenseKeyInput.trimmingCharacters(in: .whitespaces).isEmpty || emailInput.trimmingCharacters(in: .whitespaces).isEmpty || isLoading)
-            }
-            
-            Spacer()
-        }
-        .padding()
-        .frame(minWidth: 350, maxWidth: 450, maxHeight: 350)
-    }
-    
-    private func activateLicense() {
-        let trimmedKey = licenseKeyInput.trimmingCharacters(in: .whitespaces)
-        let trimmedEmail = emailInput.trimmingCharacters(in: .whitespaces)
-        
-        guard !trimmedKey.isEmpty else {
-            errorMessage = "Please enter a license key"
-            return
-        }
-        
-        guard !trimmedEmail.isEmpty else {
-            errorMessage = "Please enter your email address"
-            return
-        }
-        
-        isLoading = true
-        errorMessage = ""
-        
-        Task {
-            let success = await licenseManager.activateLicense(with: trimmedEmail, licenseKey: trimmedKey)
-            
-            DispatchQueue.main.async {
-                isLoading = false
-                
-                if success {
-                    statusMessage = "License activated successfully!"
-                    licenseKeyInput = ""
-                    emailInput = ""
-                    isPresented = false
-                    
-                    // Clear status message after 2 seconds
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                        statusMessage = ""
-                    }
-                } else {
-                    errorMessage = "Invalid license key or email. Please check and try again."
-                }
-            }
-        }
-    }
-}
+
 
 struct KeyboardShortcutsTab: View {
     var body: some View {

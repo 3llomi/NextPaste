@@ -10,11 +10,7 @@ import SwiftUI
 struct ContentView: View {
     var body: some View {
         VStack(spacing: 0) {
-            // Trial Expiration Warning
-            TrialExpirationWarningView()
-                .padding()
-            
-        
+            // Main content here if any
         }
         .onAppear(perform: {
 //            openNewWindow()

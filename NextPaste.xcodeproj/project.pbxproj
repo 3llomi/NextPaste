@@ -25,12 +25,7 @@
 		A8AA945F2B9E9DDE0014F64E /* ClipboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8AA945E2B9E9DDE0014F64E /* ClipboardView.swift */; };
 		A8AA94612B9EB0AC0014F64E /* PasteboardWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8AA94602B9EB0AC0014F64E /* PasteboardWatcher.swift */; };
 		A8D681382EBFD5F9009FF4CA /* Shortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8D681372EBFD5F4009FF4CA /* Shortcuts.swift */; };
-		A8D6813D2EC11F09009FF4CA /* ActivationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8D6813C2EC11F09009FF4CA /* ActivationView.swift */; };
-		A8D6813F2EC11F16009FF4CA /* LicenseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8D6813E2EC11F16009FF4CA /* LicenseManager.swift */; };
-		A8D681412EC11F22009FF4CA /* TrialExpirationWarningView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8D681402EC11F22009FF4CA /* TrialExpirationWarningView.swift */; };
-		A8D681432EC2384C009FF4CA /* SecureStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8D681422EC2384C009FF4CA /* SecureStorage.swift */; };
 		A8D681482EC25DC0009FF4CA /* WalkthroughView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8D681472EC25DC0009FF4CA /* WalkthroughView.swift */; };
-		A8D6814A2EC25DF1009FF4CA /* ResetLicense.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8D681492EC25DF1009FF4CA /* ResetLicense.swift */; };
 		A8D6814E2ECBA31D009FF4CA /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = A8D6814D2ECBA31D009FF4CA /* AppIcon.icon */; };
 		A8D681532ED0F9F7009FF4CA /* AppendMode.mov in Resources */ = {isa = PBXBuildFile; fileRef = A8D681502ED0F9F7009FF4CA /* AppendMode.mov */; };
 		A8D681542ED0F9F7009FF4CA /* Actions.mov in Resources */ = {isa = PBXBuildFile; fileRef = A8D6814F2ED0F9F7009FF4CA /* Actions.mov */; };
@@ -56,12 +51,7 @@
 		A8AA945E2B9E9DDE0014F64E /* ClipboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardView.swift; sourceTree = "<group>"; };
 		A8AA94602B9EB0AC0014F64E /* PasteboardWatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteboardWatcher.swift; sourceTree = "<group>"; };
 		A8D681372EBFD5F4009FF4CA /* Shortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shortcuts.swift; sourceTree = "<group>"; };
-		A8D6813C2EC11F09009FF4CA /* ActivationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivationView.swift; sourceTree = "<group>"; };
-		A8D6813E2EC11F16009FF4CA /* LicenseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LicenseManager.swift; sourceTree = "<group>"; };
-		A8D681402EC11F22009FF4CA /* TrialExpirationWarningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrialExpirationWarningView.swift; sourceTree = "<group>"; };
-		A8D681422EC2384C009FF4CA /* SecureStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureStorage.swift; sourceTree = "<group>"; };
 		A8D681472EC25DC0009FF4CA /* WalkthroughView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalkthroughView.swift; sourceTree = "<group>"; };
-		A8D681492EC25DF1009FF4CA /* ResetLicense.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResetLicense.swift; sourceTree = "<group>"; };
 		A8D6814D2ECBA31D009FF4CA /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 		A8D6814F2ED0F9F7009FF4CA /* Actions.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = Actions.mov; sourceTree = "<group>"; };
 		A8D681502ED0F9F7009FF4CA /* AppendMode.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = AppendMode.mov; sourceTree = "<group>"; };
@@ -109,18 +99,13 @@
 				A88186252E271D5E001F14F2 /* UserDefaultsManager.swift */,
 				A88186232E25CACF001F14F2 /* ActionItem.swift */,
 				A88186212E25C7E8001F14F2 /* ActionType.swift */,
-				A8D6813C2EC11F09009FF4CA /* ActivationView.swift */,
 				A8D681472EC25DC0009FF4CA /* WalkthroughView.swift */,
 				A88186322E2C7299001F14F2 /* ClipboardItem.swift */,
 				A881861F2E248234001F14F2 /* Extensions.swift */,
-				A8D681492EC25DF1009FF4CA /* ResetLicense.swift */,
-				A8D681402EC11F22009FF4CA /* TrialExpirationWarningView.swift */,
 				A881861B2E24780F001F14F2 /* ActionView.swift */,
 				A8AA945C2B9E9C630014F64E /* Info.plist */,
 				A8AA944D2B9E986A0014F64E /* NextPasteApp.swift */,
 				A8AA944F2B9E986A0014F64E /* ContentView.swift */,
-				A8D681422EC2384C009FF4CA /* SecureStorage.swift */,
-				A8D6813E2EC11F16009FF4CA /* LicenseManager.swift */,
 				A8AA94512B9E986C0014F64E /* Assets.xcassets */,
 				A8AA94562B9E986C0014F64E /* NextPaste.entitlements */,
 				A8AA94532B9E986C0014F64E /* Preview Content */,
@@ -235,7 +220,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				A881861C2E24780F001F14F2 /* ActionView.swift in Sources */,
-				A8D681412EC11F22009FF4CA /* TrialExpirationWarningView.swift in Sources */,
 				A8AA94502B9E986A0014F64E /* ContentView.swift in Sources */,
 				A88186282E271F2F001F14F2 /* ActionItemsDataSource.swift in Sources */,
 				A88186222E25C7EF001F14F2 /* ActionType.swift in Sources */,
@@ -243,15 +227,11 @@
 				A8D681382EBFD5F9009FF4CA /* Shortcuts.swift in Sources */,
 				A8AA94612B9EB0AC0014F64E /* PasteboardWatcher.swift in Sources */,
 				A88186242E25CAD3001F14F2 /* ActionItem.swift in Sources */,
-				A8D6813D2EC11F09009FF4CA /* ActivationView.swift in Sources */,
-				A8D681432EC2384C009FF4CA /* SecureStorage.swift in Sources */,
-				A8D6814A2EC25DF1009FF4CA /* ResetLicense.swift in Sources */,
 				A88186262E271D65001F14F2 /* UserDefaultsManager.swift in Sources */,
 				A8AA944E2B9E986A0014F64E /* NextPasteApp.swift in Sources */,
 				A8AA945F2B9E9DDE0014F64E /* ClipboardView.swift in Sources */,
 				A8D681482EC25DC0009FF4CA /* WalkthroughView.swift in Sources */,
 				A88186202E248239001F14F2 /* Extensions.swift in Sources */,
-				A8D6813F2EC11F16009FF4CA /* LicenseManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -382,12 +362,12 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = NextPaste/NextPaste.entitlements;
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"NextPaste/Preview Content\"";
-				DEVELOPMENT_TEAM = YM8KD4B2T3;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -411,12 +391,12 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = NextPaste/NextPaste.entitlements;
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"NextPaste/Preview Content\"";
-				DEVELOPMENT_TEAM = YM8KD4B2T3;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;

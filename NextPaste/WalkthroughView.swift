@@ -93,9 +93,7 @@ struct WalkthroughView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            if showActivationView {
-                ActivationView()
-            } else if currentPage < pages.count {
+          if currentPage < pages.count {
                 walkthroughContent
             }
         }
@@ -215,10 +213,8 @@ struct WalkthroughView: View {
             setLaunchAtLogin(enabled: true)
         }
         
-        // Show activation view in the same window
-        withAnimation {
-            showActivationView = true
-        }
+        // Close walkthrough
+        isPresented = false
     }
 }
 
