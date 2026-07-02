@@ -60,7 +60,7 @@ jobs:
       - name: Install appdmg
         run: npm install -g appdmg
 
-      - name: Build macOS app
+      - name: Build and Archive macOS app
         env:
           TEAM_ID: ${{ secrets.TEAM_ID }}
         run: |
@@ -75,14 +75,40 @@ jobs:
             exit 1
           fi
           
+          # Create archive using Xcode's archive process
           xcodebuild -scheme $SCHEME \
             -project $PROJECT \
             -configuration Release \
             -derivedDataPath $BUILD_PATH \
-            build \
+            -archivePath $BUILD_PATH/NextPaste.xcarchive \
+            archive \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO
+          
+          # Export archive to get the .app file
+          xcodebuild -exportArchive \
+            -archivePath $BUILD_PATH/NextPaste.xcarchive \
+            -exportPath $BUILD_PATH/Export \
+            -exportOptionsPlist /dev/stdin \
+            <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>signingStyle</key>
+            <string>automatic</string>
+            <key>stripSwiftSymbols</key>
+            <true/>
+            <key>teamID</key>
+            <string>${TEAM_ID}</string>
+            <key>method</key>
+            <string>mac-application</string>
+          </dict>
+          </plist>
+          EOF
+          
+          echo "Archive created successfully"
 
       - name: Locate and sign the app
         env:
@@ -91,14 +117,14 @@ jobs:
           echo "Build directory contents:"
           find $BUILD_PATH -type d -name "*.app" 2>/dev/null || true
           
-          # Find the built app
-          APP_PATH=$(find $BUILD_PATH -name "$APP_NAME.app" -type d | head -1)
+          # Find the exported app from archive
+          APP_PATH=$(find $BUILD_PATH/Export -name "$APP_NAME.app" -type d | head -1)
           if [ -z "$APP_PATH" ]; then
-            echo "Error: App not found in build directory"
+            echo "Error: App not found in export directory"
             echo "Searching for any .app files:"
             find $BUILD_PATH -type d -name "*.app" 2>/dev/null || true
             echo "Full build directory structure:"
-            find $BUILD_PATH -type d | head -20 || true
+            find $BUILD_PATH -type d | head -30 || true
             exit 1
           fi
           echo "Found app at: $APP_PATH"
@@ -145,6 +171,14 @@ jobs:
           echo "DMG_PATH=$DMG_PATH" >> $GITHUB_ENV
           ls -lh "$DMG_PATH"
 
+      - name: Create app zip archive
+        run: |
+          ZIP_NAME="${APP_NAME}-${VERSION}.zip"
+          echo "Creating zip: $ZIP_NAME"
+          ditto -c -k --sequesterRsrc "./$APP_NAME.app" "$ZIP_NAME"
+          echo "ZIP_PATH=$ZIP_NAME" >> $GITHUB_ENV
+          ls -lh "$ZIP_NAME"
+
       - name: Notarize and staple app
         env:
           APPLE_ID: ${{ secrets.APPLE_ID }}
@@ -169,11 +203,13 @@ jobs:
           path: ${{ env.DMG_PATH }}
           retention-days: 30
 
-      - name: Create Release and Upload DMG
+      - name: Create Release and Upload Files
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
         with:
-          files: ${{ env.DMG_PATH }}
+          files: |
+            ${{ env.DMG_PATH }}
+            ${{ env.ZIP_PATH }}
           draft: false
           prerelease: false
           generate_release_notes: true
