@@ -75,13 +75,16 @@ jobs:
             exit 1
           fi
           
-          # Create archive using Xcode's archive process
+          # Create archive using Xcode's archive process (Universal Binary - ARM64 + x86_64)
           xcodebuild -scheme $SCHEME \
             -project $PROJECT \
             -configuration Release \
             -derivedDataPath $BUILD_PATH \
             -archivePath $BUILD_PATH/NextPaste.xcarchive \
+            -arch arm64 \
+            -arch x86_64 \
             archive \
+            ARCHS="arm64 x86_64" \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO
@@ -109,6 +112,13 @@ jobs:
           EOF
           
           echo "Archive created successfully"
+          
+          # Verify universal binary
+          BUILT_APP=$(find $BUILD_PATH/Export -name "$APP_NAME.app" -type d | head -1)
+          if [ -n "$BUILT_APP" ]; then
+            echo "Checking architecture of built app:"
+            file "$BUILT_APP/Contents/MacOS/$APP_NAME"
+          fi
 
       - name: Locate and sign the app
         env:
@@ -129,6 +139,15 @@ jobs:
           fi
           echo "Found app at: $APP_PATH"
           echo "App size: $(du -sh "$APP_PATH")"
+          
+          # Verify it's a universal binary
+          echo "Verifying architecture (should show both arm64 and x86_64):"
+          file "$APP_PATH/Contents/MacOS/$APP_NAME"
+          
+          # Check with lipo as well
+          echo "Detailed architecture check:"
+          lipo -info "$APP_PATH/Contents/MacOS/$APP_NAME" || echo "Not a universal binary - checking current arch:"
+          
           echo "APP_PATH=$APP_PATH" >> $GITHUB_ENV
           
           # Sign if certificate is available
