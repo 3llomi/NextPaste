@@ -1,0 +1,181 @@
+name: Build and Release macOS App
+
+on:
+  push:
+    branches: [master]
+    tags:
+      - 'v*'
+
+env:
+  APP_NAME: NextPaste
+  BUILD_PATH: build
+  SCHEME: NextPaste
+  PROJECT: NextPaste.xcodeproj
+
+jobs:
+  build:
+    runs-on: macos-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate version from git tag
+        run: |
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/}
+          else
+            VERSION="1.0.0-$(git rev-parse --short HEAD)"
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "Building version: $VERSION"
+
+      - name: Install certificate
+        env:
+          CERTIFICATE_BASE64: ${{ secrets.MACOS_CERTIFICATE }}
+          CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          if [ -z "$CERTIFICATE_BASE64" ]; then
+            echo "Warning: Certificate not provided. Building without code signing."
+            exit 0
+          fi
+          echo $CERTIFICATE_BASE64 | base64 --decode > certificate.p12
+          security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security set-keychain-settings -t 3600 -u build.keychain
+          security import certificate.p12 -k build.keychain -P "$CERTIFICATE_PASSWORD" -T /usr/bin/codesign -T /usr/bin/productbuild
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" build.keychain
+          echo "Certificate installed successfully"
+
+      - name: Setup Node.js for appdmg
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install appdmg
+        run: npm install -g appdmg
+
+      - name: Build macOS app
+        env:
+          TEAM_ID: ${{ secrets.TEAM_ID }}
+        run: |
+          cd $GITHUB_WORKSPACE
+          ls -la
+          pwd
+          
+          # Verify project exists
+          if [ ! -d "$PROJECT" ]; then
+            echo "Error: Xcode project not found at $PROJECT"
+            ls -la
+            exit 1
+          fi
+          
+          xcodebuild -scheme $SCHEME \
+            -project $PROJECT \
+            -configuration Release \
+            -derivedDataPath $BUILD_PATH \
+            build \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Locate and sign the app
+        env:
+          TEAM_ID: ${{ secrets.TEAM_ID }}
+        run: |
+          echo "Build directory contents:"
+          find $BUILD_PATH -type d -name "*.app" 2>/dev/null || true
+          
+          # Find the built app
+          APP_PATH=$(find $BUILD_PATH -name "$APP_NAME.app" -type d | head -1)
+          if [ -z "$APP_PATH" ]; then
+            echo "Error: App not found in build directory"
+            echo "Searching for any .app files:"
+            find $BUILD_PATH -type d -name "*.app" 2>/dev/null || true
+            echo "Full build directory structure:"
+            find $BUILD_PATH -type d | head -20 || true
+            exit 1
+          fi
+          echo "Found app at: $APP_PATH"
+          echo "App size: $(du -sh "$APP_PATH")"
+          echo "APP_PATH=$APP_PATH" >> $GITHUB_ENV
+          
+          # Sign if certificate is available
+          if [ -n "$TEAM_ID" ]; then
+            echo "Signing app..."
+            # Sign all dylibs
+            find "$APP_PATH" -type f -name "*.dylib" -print0 | xargs -0 codesign --force --options runtime --sign "Developer ID Application: $TEAM_ID" 2>/dev/null || true
+            # Sign the main executable
+            codesign --force --deep --options runtime --sign "Developer ID Application: $TEAM_ID" "$APP_PATH"
+            echo "App signed successfully"
+          fi
+
+      - name: Create DMG
+        env:
+          TEAM_ID: ${{ secrets.TEAM_ID }}
+        run: |
+          DMG_NAME="${APP_NAME}-${VERSION}.dmg"
+          DMG_PATH="$DMG_NAME"
+          
+          echo "Creating DMG: $DMG_PATH"
+          
+          # Copy app to temp location for DMG
+          cp -r "$APP_PATH" ./$APP_NAME.app
+          
+          # Create a simple DMG with hdiutil if appdmg config doesn't exist
+          if [ ! -f "dmgInfo.json" ]; then
+            mkdir -p dmg-temp
+            cp -r ./$APP_NAME.app dmg-temp/
+            hdiutil create -volname "$APP_NAME" -srcfolder dmg-temp -ov -format UDZO "$DMG_PATH"
+            rm -rf dmg-temp
+          else
+            appdmg dmgInfo.json "$DMG_PATH"
+          fi
+          
+          # Sign DMG if certificate is available
+          if [ -n "$TEAM_ID" ]; then
+            codesign --force --sign "Developer ID Application: $TEAM_ID" "$DMG_PATH" --timestamp
+          fi
+          
+          echo "DMG_PATH=$DMG_PATH" >> $GITHUB_ENV
+          ls -lh "$DMG_PATH"
+
+      - name: Notarize and staple app
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_PASSWORD: ${{ secrets.APP_SPECIFIC_PASSWORD }}
+        run: |
+          if [ -z "$APPLE_ID" ] || [ -z "$APPLE_PASSWORD" ]; then
+            echo "Warning: Apple ID credentials not provided. Skipping notarization."
+            exit 0
+          fi
+          
+          echo "Notarizing app..."
+          xcrun notarytool store-credentials "notary-profile" --apple-id "$APPLE_ID" --team-id "$APPLE_TEAM_ID" --password "$APPLE_PASSWORD" --overwrite
+          xcrun notarytool submit "$DMG_PATH" --keychain-profile "notary-profile" --wait
+          xcrun stapler staple "$DMG_PATH"
+          echo "App notarized and stapled successfully"
+
+      - name: Upload DMG as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.DMG_PATH }}
+          path: ${{ env.DMG_PATH }}
+          retention-days: 30
+
+      - name: Create Release and Upload DMG
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ${{ env.DMG_PATH }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
