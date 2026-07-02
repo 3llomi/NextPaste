@@ -81,10 +81,11 @@ jobs:
             -configuration Release \
             -derivedDataPath $BUILD_PATH \
             -archivePath $BUILD_PATH/NextPaste.xcarchive \
-            -arch arm64 \
-            -arch x86_64 \
             archive \
             ARCHS="arm64 x86_64" \
+            ONLY_ACTIVE_ARCH=NO \
+            VALID_ARCHS="arm64 x86_64" \
+            SUPPORTED_PLATFORMS="macosx" \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO
@@ -107,11 +108,27 @@ jobs:
             <string>${TEAM_ID}</string>
             <key>method</key>
             <string>mac-application</string>
+            <key>archiveExportOptions</key>
+            <dict>
+              <key>signingStyle</key>
+              <string>automatic</string>
+            </dict>
           </dict>
           </plist>
           EOF
           
           echo "Archive created successfully"
+          
+          # Verify archive contains universal binary
+          echo "Checking archive contents:"
+          find $BUILD_PATH/NextPaste.xcarchive/Products -name "$APP_NAME" -type f
+          
+          ARCHIVED_APP=$(find $BUILD_PATH/NextPaste.xcarchive/Products -name "$APP_NAME" -type f | head -1)
+          if [ -n "$ARCHIVED_APP" ]; then
+            echo "Archive app architecture:"
+            file "$ARCHIVED_APP"
+            lipo -info "$ARCHIVED_APP"
+          fi
           
           # Verify universal binary
           BUILT_APP=$(find $BUILD_PATH/Export -name "$APP_NAME.app" -type d | head -1)
