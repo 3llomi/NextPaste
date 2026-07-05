@@ -71,12 +71,7 @@ struct WalkthroughView: View {
             hasVideo: true,
             videoName: "Actions"
         ),
-//        WalkthroughPage(
-//            title: "Powerful Actions",
-//            description: "Transform your clipboard with built-in actions: uppercase, lowercase, base64 encode, and more!",
-//            icon: "wand.and.stars",
-//            color: .indigo
-//        ),
+
         WalkthroughPage(
             title: "Privacy First",
             description: "Exclude password managers and sensitive apps from clipboard history automatically.",
@@ -213,8 +208,9 @@ struct WalkthroughView: View {
             setLaunchAtLogin(enabled: true)
         }
         
-        // Close walkthrough
+        // Close walkthrough window
         isPresented = false
+        NSApp.setActivationPolicy(.accessory)
     }
 }
 

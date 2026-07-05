@@ -362,19 +362,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     @objc private func statusBarButtonClicked(_ sender: NSStatusBarButton) {
-        print("🎯 Status bar button clicked!")
         guard let menu = statusItem?.menu else {
-            print("✗ No menu found")
             return
         }
         
         // Get the event to check which mouse button was used
         guard let event = NSApp.currentEvent else {
-            print("✗ No current event")
             return
         }
         
-        print("✓ Showing menu with \(menu.items.count) items")
         statusItem?.menu = menu
         sender.performClick(nil)
     }
@@ -470,7 +466,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
            event.modifierFlags == shortcut.modifiers && getDigitFromKeyCode(event.keyCode) == digit {
             let index = digit == 0 ? 9 : digit - 1
             pasteCopiedItem(at: index)
-            print("✓ Quick paste digit \(digit) - Pasting from index \(index)")
         }
     }
     
@@ -486,7 +481,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             let defaultExcludedApps = ["1Password", "LastPass", "Dashlane", "Keeper", "KeePass", "Bitwarden"]
             let excludedAppsString = defaultExcludedApps.joined(separator: ",")
             userDefaults.set(excludedAppsString, forKey: excludedAppsKey)
-            print("✅ Default excluded apps initialized: \(defaultExcludedApps.joined(separator: ", "))")
         }
     }
     
@@ -516,63 +510,51 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         // Quick Paste Shortcuts (1-9, 0) - Always work
         KeyboardShortcuts.onKeyDown(for: .quickPaste1) { [weak self] in
-            print("🎯 quickPaste1 shortcut triggered!")
             self?.pasteCopiedItem(at: 0)
         }
         
         KeyboardShortcuts.onKeyDown(for: .quickPaste2) { [weak self] in
-            print("🎯 quickPaste2 shortcut triggered!")
             self?.pasteCopiedItem(at: 1)
         }
         
         KeyboardShortcuts.onKeyDown(for: .quickPaste3) { [weak self] in
-            print("🎯 quickPaste3 shortcut triggered!")
             self?.pasteCopiedItem(at: 2)
         }
         
         KeyboardShortcuts.onKeyDown(for: .quickPaste4) { [weak self] in
-            print("🎯 quickPaste4 shortcut triggered!")
             self?.pasteCopiedItem(at: 3)
         }
         
         KeyboardShortcuts.onKeyDown(for: .quickPaste5) { [weak self] in
-            print("🎯 quickPaste5 shortcut triggered!")
             self?.pasteCopiedItem(at: 4)
         }
         
         KeyboardShortcuts.onKeyDown(for: .quickPaste6) { [weak self] in
-            print("🎯 quickPaste6 shortcut triggered!")
             self?.pasteCopiedItem(at: 5)
         }
         
         KeyboardShortcuts.onKeyDown(for: .quickPaste7) { [weak self] in
-            print("🎯 quickPaste7 shortcut triggered!")
             self?.pasteCopiedItem(at: 6)
         }
         
         KeyboardShortcuts.onKeyDown(for: .quickPaste8) { [weak self] in
-            print("🎯 quickPaste8 shortcut triggered!")
             self?.pasteCopiedItem(at: 7)
         }
         
         KeyboardShortcuts.onKeyDown(for: .quickPaste9) { [weak self] in
-            print("🎯 quickPaste9 shortcut triggered!")
             self?.pasteCopiedItem(at: 8)
         }
         
         KeyboardShortcuts.onKeyDown(for: .quickPaste0) { [weak self] in
-            print("🎯 quickPaste0 shortcut triggered!")
             self?.pasteCopiedItem(at: 9)
         }
         
         // Quick Paste & Delete - Always works
         KeyboardShortcuts.onKeyDown(for: .quickPasteDelete) { [weak self] in
-            print("🎯 quickPasteDelete shortcut triggered!")
             self?.pasteCopiedItemAndDelete(at: 0, backwards: false)
         }
 
         KeyboardShortcuts.onKeyDown(for: .pasteBackwards) { [weak self] in
-             print("✓ Paste Backwards triggered")
             self?.pasteCopiedItemAndDelete(at: 0, backwards: true)
         }
 
@@ -820,11 +802,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         print("Pasting item: \(item.text.prefix(20))... (Sort: \(sortAscending ? "ascending" : "descending"))")
         
         // First hide our window to return focus
-//        clipboardWindow?.orderOut(nil)
-        
-        // Set flag to ignore this clipboard change
-        // Set flag to ignore this clipboard change
-        
         
         // Set the clipboard content
         beginPasteOperation()
@@ -875,7 +852,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         let item = items[index]
         
-        print("Pasting & deleting item: \(item.text.prefix(20))... (Sort: \(sortAscending ? "ascending" : "descending"))")
         
         beginPasteOperation()
         pasateboardWatcher?.stopPolling()
@@ -907,11 +883,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 if !self.isPasting {
                     // Delete the item after paste is complete
                     do {
-                        print("Deleting item from realm")
+                        
                         try realm.write {
                             realm.delete(item)
                         }
-                        print("✓ Item deleted after paste")
+                        
                     } catch {
                         print("Error deleting item: \(error)")
                     }
@@ -1051,7 +1027,6 @@ extension AppDelegate: PasteboardWatcherDelegate {
         
         let appendMode = UserDefaultsManager.shared.getAppendMode()
         let allowDuplicates = UserDefaultsManager.shared.getAllowDuplicates()
-        print("AllowDuplicates \(UserDefaults.standard.bool(forKey: "allow_duplicates"))")
         
         try? realm.write {
             if appendMode {
@@ -1079,7 +1054,7 @@ extension AppDelegate: PasteboardWatcherDelegate {
                     let duplicateItems = realm.objects(ClipboardItem.self).where { $0.text == text }
                     if !duplicateItems.isEmpty {
                         // Duplicate found, don't add it
-                        print("Duplicate item skipped: \(text.prefix(50))")
+                        print("Duplicate item skipped")
                         return
                     }
                 }

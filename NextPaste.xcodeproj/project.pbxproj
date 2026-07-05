@@ -73,6 +73,39 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		A804DA6D2FF9CB4A00A79C83 /* Presentation */ = {
+			isa = PBXGroup;
+			children = (
+				A8D681472EC25DC0009FF4CA /* WalkthroughView.swift */,
+				A881861B2E24780F001F14F2 /* ActionView.swift */,
+				A8AA945E2B9E9DDE0014F64E /* ClipboardView.swift */,
+				A8AA944F2B9E986A0014F64E /* ContentView.swift */,
+			);
+			path = Presentation;
+			sourceTree = "<group>";
+		};
+		A804DA6E2FF9CB7300A79C83 /* Data */ = {
+			isa = PBXGroup;
+			children = (
+				A88186272E271F27001F14F2 /* ActionItemsDataSource.swift */,
+				A8D681372EBFD5F4009FF4CA /* Shortcuts.swift */,
+				A88186232E25CACF001F14F2 /* ActionItem.swift */,
+				A88186212E25C7E8001F14F2 /* ActionType.swift */,
+				A88186322E2C7299001F14F2 /* ClipboardItem.swift */,
+				A88186252E271D5E001F14F2 /* UserDefaultsManager.swift */,
+				A8AA94602B9EB0AC0014F64E /* PasteboardWatcher.swift */,
+			);
+			path = Data;
+			sourceTree = "<group>";
+		};
+		A804DA6F2FF9CCF200A79C83 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				A881861F2E248234001F14F2 /* Extensions.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
 		A8AA94412B9E98690014F64E = {
 			isa = PBXGroup;
 			children = (
@@ -93,24 +126,15 @@
 		A8AA944C2B9E986A0014F64E /* NextPaste */ = {
 			isa = PBXGroup;
 			children = (
+				A804DA6F2FF9CCF200A79C83 /* Extensions */,
+				A804DA6E2FF9CB7300A79C83 /* Data */,
+				A804DA6D2FF9CB4A00A79C83 /* Presentation */,
 				A8D681442EC25734009FF4CA /* Resources */,
-				A8D681372EBFD5F4009FF4CA /* Shortcuts.swift */,
-				A88186272E271F27001F14F2 /* ActionItemsDataSource.swift */,
-				A88186252E271D5E001F14F2 /* UserDefaultsManager.swift */,
-				A88186232E25CACF001F14F2 /* ActionItem.swift */,
-				A88186212E25C7E8001F14F2 /* ActionType.swift */,
-				A8D681472EC25DC0009FF4CA /* WalkthroughView.swift */,
-				A88186322E2C7299001F14F2 /* ClipboardItem.swift */,
-				A881861F2E248234001F14F2 /* Extensions.swift */,
-				A881861B2E24780F001F14F2 /* ActionView.swift */,
 				A8AA945C2B9E9C630014F64E /* Info.plist */,
 				A8AA944D2B9E986A0014F64E /* NextPasteApp.swift */,
-				A8AA944F2B9E986A0014F64E /* ContentView.swift */,
 				A8AA94512B9E986C0014F64E /* Assets.xcassets */,
 				A8AA94562B9E986C0014F64E /* NextPaste.entitlements */,
 				A8AA94532B9E986C0014F64E /* Preview Content */,
-				A8AA945E2B9E9DDE0014F64E /* ClipboardView.swift */,
-				A8AA94602B9EB0AC0014F64E /* PasteboardWatcher.swift */,
 			);
 			path = NextPaste;
 			sourceTree = "<group>";
@@ -362,12 +386,13 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = NextPaste/NextPaste.entitlements;
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"NextPaste/Preview Content\"";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = YM8KD4B2T3;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -380,6 +405,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.devlomi.nextpaste;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 			};
@@ -391,12 +417,13 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = NextPaste/NextPaste.entitlements;
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"NextPaste/Preview Content\"";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = YM8KD4B2T3;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -409,6 +436,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.devlomi.nextpaste;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 			};
