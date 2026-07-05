@@ -8,19 +8,12 @@
 
 **Supercharge your clipboard workflow with sequential paste, instant paste shortcuts, and keyboard-first productivity.**
 
-<p>
-<a href="https://github.com/3llomi/nextpaste/releases"><img src="https://img.shields.io/github/v/release/3llomi/nextpaste?style=for-the-badge"></a>
-<a href="LICENSE"><img src="https://img.shields.io/github/license/3llomi/nextpaste?style=for-the-badge"></a>
-<a href="https://github.com/3llomi/nextpaste/stargazers"><img src="https://img.shields.io/github/stars/3llomi/nextpaste?style=for-the-badge"></a>
-<a href="https://github.com/3llomi/nextpaste/issues"><img src="https://img.shields.io/github/issues/3llomi/nextpaste?style=for-the-badge"></a>
-</p>
 
 **🍎 macOS 13+ • Apple Silicon & Intel • SwiftUI**
 
 [Website](https://nextpaste.app) •
-[Download](https://nextpaste.app) •
-[Report Bug](https://github.com/3llomi/nextpaste/issues) •
-[Request Feature](https://github.com/3llomi/nextpaste/issues)
+[Download](https://github.com/3llomi/NextPaste/releases/) •
+[Report Bug/Request Feature](https://github.com/3llomi/nextpaste/issues) •
 
 </div>
 
@@ -45,32 +38,54 @@ Perfect for:
 
 # 🎬 Demo
 
-> Replace these placeholders with your videos after publishing.
+## ✨ Sequential Paste
 
-## Sequential Paste
+<p align="center">
+  <img
+    src="assets/demo/sequential-paste.gif"
+    alt="Sequential Paste"
+    width="900">
+</p>
 
-https://github.com/3llomi/nextpaste/assets/videos/SequentialPaste.mov
-
----
-
-## Paste by Number
-
-https://github.com/3llomi/nextpaste/assets/videos/PasteByNumber.mov
-
+Copy multiple items once and paste them one by one with a single shortcut.
 
 ---
 
-## Append Mode
+## 🔢 Paste by Number
 
-https://github.com/3llomi/nextpaste/assets/videos/AppendMode.mov
+<p align="center">
+  <img
+    src="assets/demo/paste-by-number.gif"
+    alt="Paste by Number"
+    width="900">
+</p>
+
+Instantly paste any of your recent clipboard items using configurable keyboard shortcuts.
 
 ---
 
-## Keyboard Actions
+## ➕ Append Mode
 
-https://github.com/3llomi/nextpaste/assets/videos/Actions.mov
+<p align="center">
+  <img
+    src="assets/demo/append-mode.gif"
+    alt="Append Mode"
+    width="900">
+</p>
+
+Combine multiple clipboard items into a single entry before pasting.
 
 ---
+
+## ⌨️ Action View
+
+<p align="center">
+  <img
+    src="assets/demo/action-view.gif"
+    alt="Action View"
+    width="900">
+</p>
+
 
 
 # 🚀 Features
