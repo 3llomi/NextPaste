@@ -42,7 +42,7 @@ Perfect for:
 
 <p align="center">
   <img
-    src="assets/demo/sequential-paste.gif"
+    src="assets/gifs/sequential-paste.gif"
     alt="Sequential Paste"
     width="900">
 </p>
@@ -55,7 +55,7 @@ Copy multiple items once and paste them one by one with a single shortcut.
 
 <p align="center">
   <img
-    src="assets/demo/paste-by-number.gif"
+    src="assets/gifs/paste-by-number.gif"
     alt="Paste by Number"
     width="900">
 </p>
@@ -68,7 +68,7 @@ Instantly paste any of your recent clipboard items using configurable keyboard s
 
 <p align="center">
   <img
-    src="assets/demo/append-mode.gif"
+    src="assets/gifs/append-mode.gif"
     alt="Append Mode"
     width="900">
 </p>
@@ -81,7 +81,7 @@ Combine multiple clipboard items into a single entry before pasting.
 
 <p align="center">
   <img
-    src="assets/demo/action-view.gif"
+    src="assets/gifs/action-view.gif"
     alt="Action View"
     width="900">
 </p>
