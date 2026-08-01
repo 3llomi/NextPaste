@@ -15,6 +15,7 @@ class ActionItemsDataSource{
         ActionItem(type: .sequentialPasteNewline, title: "Sequential Paste Newline", icon: Image(systemName: "text.append"), shortcut: "⌘⌥N", enabled: userDefaultsManager.getSequentialPasteNewLine()),
         ActionItem(type: .appendMode, title: "Append Mode", icon: Image(systemName: "link"), shortcut: "⌘⌥V", enabled: false),
         ActionItem(type: .allowDuplicates, title: "Allow Duplicates", icon: Image(systemName: "doc.on.doc.fill"), shortcut: "⌘D", enabled: userDefaultsManager.getAllowDuplicates()),
+        ActionItem(type: .trim, title: "Trim", icon: Image(systemName: "text.insert"), shortcut: "⌘T", enabled: userDefaultsManager.getTrim()),
         ActionItem(type: .deleteConfirmation, title: "Delete Confirmation", icon: Image(systemName: "exclamationmark.circle.fill"), shortcut: "⌘⇧⌫", enabled: userDefaultsManager.getDeleteConfirmation()),
         ActionItem(type: .deleteAll, title: "Delete All", icon: Image(systemName: "trash.fill"), shortcut: "⌘⌥A", enabled: false),
         ActionItem(type: .deleteItems, title: "Delete Items", icon: Image(systemName: "trash.slash"), shortcut: "⌘⌫", enabled: false),

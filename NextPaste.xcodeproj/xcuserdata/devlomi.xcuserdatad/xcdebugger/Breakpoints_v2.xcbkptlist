@@ -478,9 +478,9 @@
             filePath = "NextPaste/NextPasteApp.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "774"
-            endingLineNumber = "774"
-            landmarkName = "endPasteOperation()"
+            startingLineNumber = "802"
+            endingLineNumber = "802"
+            landmarkName = "pasteCopiedItem(at:completion:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -494,10 +494,10 @@
             filePath = "NextPaste/NextPasteApp.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "773"
-            endingLineNumber = "773"
-            landmarkName = "endPasteOperation()"
-            landmarkType = "7">
+            startingLineNumber = "801"
+            endingLineNumber = "801"
+            landmarkName = "AppDelegate"
+            landmarkType = "3">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -510,9 +510,9 @@
             filePath = "NextPaste/NextPasteApp.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "776"
-            endingLineNumber = "776"
-            landmarkName = "endPasteOperation()"
+            startingLineNumber = "804"
+            endingLineNumber = "804"
+            landmarkName = "pasteCopiedItem(at:completion:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

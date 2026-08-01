@@ -31,6 +31,10 @@ class UserDefaultsManager {
         return UserDefaults.standard.value(forKey: "allow_duplicates") as? Bool ?? false
     }
     
+    func getTrim() ->Bool  {
+        return UserDefaults.standard.value(forKey: "trim") as? Bool ?? false
+    }
+    
     func setDeleteConfirmation(bool:Bool)  {
         UserDefaults.standard.set(bool, forKey: "delete_confirmation")
     }
@@ -52,6 +56,10 @@ class UserDefaultsManager {
     
     func setAppendMode(bool:Bool)  {
         UserDefaults.standard.set(bool, forKey: "appendMode")
+    }
+    
+    func setTrim(bool:Bool) {
+        UserDefaults.standard.set(bool, forKey: "trim")
     }
     
 }

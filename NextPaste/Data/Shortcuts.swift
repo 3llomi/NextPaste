@@ -18,6 +18,7 @@ extension KeyboardShortcuts.Name {
     static let orderAsc = Self("order_asc",default:.init(.rightBracket,modifiers: .command))
     static let orderDesc = Self("order_desc",default:.init(.leftBracket,modifiers: .command))
     static let allowDuplicates = Self("allow_duplicates", default:.init(.d, modifiers: .command))
+    static let trim = Self("trim", default:.init(.t, modifiers: .command))
     
     static let appendMode = Self("append_mode", default:.init(.v, modifiers: [.command, .option]))
     

@@ -80,10 +80,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private let pasteOperationLock = NSLock()
     
     // Helper function to disable all global shortcuts
+    private func enableActionsPanelShortcut(_ bool:Bool){
+        if bool{
+            KeyboardShortcuts.enable(.toggleActionsPanel)
+        }else{
+            KeyboardShortcuts.disable(.toggleActionsPanel)
+        }
+    }
     func disableGlobalShortcuts() {
         print("⛔ Disabling global shortcuts")
         KeyboardShortcuts.disable(.clipboardHistory)
-        KeyboardShortcuts.disable(.toggleActionsPanel)
         KeyboardShortcuts.disable(.quickPaste1)
         KeyboardShortcuts.disable(.quickPaste2)
         KeyboardShortcuts.disable(.quickPaste3)
@@ -206,6 +212,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         // Update shortcuts and menu bar
         enableGlobalShortcuts()
+        KeyboardShortcuts.disable(.toggleActionsPanel)
         showMenuBar()
         
         pasateboardWatcher = PasteboardWatcher(fileKinds: [])
@@ -219,7 +226,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             print("✓ Starting pasteboard monitoring (copyWhenHidden enabled)")
             pasateboardWatcher?.startPolling()
         }
-        setupClipboardWindowVisibilityObservers()
         
         // Start cleanup timer - runs every hour to remove items older than 1 week
         startCleanupTimer()
@@ -611,6 +617,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             return nil
         }
         
+        //Trim (⌘T)
+        if let shortcut = KeyboardShortcuts.getShortcut(for: .trim),
+           event.keyCode == CGKeyCode(shortcut.carbonKeyCode),
+           eventModifiers == shortcut.modifiers.intersection(.deviceIndependentFlagsMask) {
+            print("✓ Trim toggled (local)")
+            let current = UserDefaultsManager.shared.getTrim()
+            UserDefaultsManager.shared.setTrim(bool: !current)
+            return nil
+        }
+        
         // Delete Confirmation (⌘⇧⌫)
         if let shortcut = KeyboardShortcuts.getShortcut(for: .deleteConfirmation),
            event.keyCode == CGKeyCode(shortcut.carbonKeyCode),
@@ -787,6 +803,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Get the current sort order preference
         let sortAscending = UserDefaultsManager.shared.getSortAsc()
         let sequentialPasteNewline = UserDefaultsManager.shared.getSequentialPasteNewLine()
+        let trim = UserDefaultsManager.shared.getTrim()
         
         // Sort items based on user preference
         let items = realm.objects(ClipboardItem.self).sorted(byKeyPath: "timestamp", ascending: sortAscending)
@@ -811,6 +828,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         // Prepare the text with newline if sequential paste newline is enabled
         var textToPaste = item.text
+        if trim {
+            textToPaste = item.text.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
         if sequentialPasteNewline {
             textToPaste = item.text + "\n"
             print("Sequential paste newline enabled: appending newline")
@@ -842,6 +862,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let sortAscendingSetting = UserDefaultsManager.shared.getSortAsc()
         let sortAscending = backwards ? !sortAscendingSetting : sortAscendingSetting
         let sequentialPasteNewline = UserDefaultsManager.shared.getSequentialPasteNewLine()
+        let trim = UserDefaultsManager.shared.getTrim()
         
         // Sort items based on user preference
         let items = realm.objects(ClipboardItem.self).sorted(byKeyPath: "timestamp", ascending: sortAscending)
@@ -860,6 +881,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         // Prepare the text with newline if sequential paste newline is enabled
         var textToPaste = item.text
+        
+        if trim {
+            textToPaste = item.text.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
         if sequentialPasteNewline {
             textToPaste = item.text + "\n"
             print("Sequential paste newline enabled: appending newline")
@@ -915,6 +940,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             // Start monitoring clipboard when window is created
             pasateboardWatcher?.startPolling()
             NotificationCenter.default.post(name: NSNotification.Name("ClipboardWindowDidShow"), object: nil)
+            enableActionsPanelShortcut(true)
+            
         } else {
             if clipboardWindow?.isVisible == true {
                 clipboardWindow?.orderOut(nil)
@@ -923,6 +950,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     pasateboardWatcher?.stopPolling()
                 }
                 NotificationCenter.default.post(name: NSNotification.Name("ClipboardWindowDidHide"), object: nil)
+                enableActionsPanelShortcut(false)
             } else {
 //                positionWindowNearCursor()
                 clipboardWindow?.makeKeyAndOrderFront(nil)
@@ -930,18 +958,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 // Start monitoring clipboard when window is shown
                 pasateboardWatcher?.startPolling()
                 NotificationCenter.default.post(name: NSNotification.Name("ClipboardWindowDidShow"), object: nil)
+                enableActionsPanelShortcut(true)
             }
         }
     }
-    private func setupClipboardWindowVisibilityObservers() {
-        NotificationCenter.default.addObserver(forName: NSNotification.Name("ClipboardWindowDidShow"), object: nil, queue: .main) { _ in
-            KeyboardShortcuts.enable(.toggleActionsPanel)
-        }
-        NotificationCenter.default.addObserver(forName: NSNotification.Name("ClipboardWindowDidHide"), object: nil, queue: .main) { _ in
-            KeyboardShortcuts.disable(.toggleActionsPanel)
-        }
-    }
-    
     func createClipboardHistoryWindow() {
         let windowWidth: CGFloat = 400
            let windowHeight: CGFloat = 350
@@ -1027,7 +1047,6 @@ extension AppDelegate: PasteboardWatcherDelegate {
         
         let appendMode = UserDefaultsManager.shared.getAppendMode()
         let allowDuplicates = UserDefaultsManager.shared.getAllowDuplicates()
-        
         try? realm.write {
             if appendMode {
                 // Get the most recent item
@@ -1730,6 +1749,12 @@ struct KeyboardShortcutsTab: View {
                         name: .allowDuplicates
                     )
                     
+                    ShortcutRow(
+                        title: "Trim",
+                        description: "Trim Whitespaces and newlines at the end",
+                        name: .trim
+                    )
+                    
                     Divider()
                         .padding(.vertical, 2)
                     
@@ -1903,7 +1928,6 @@ struct KeyboardShortcutsTab: View {
 
 struct GeneralSettingsTab: View {
     @AppStorage("copyWhenHidden") private var copyWhenHidden: Bool = true
-    @AppStorage("toggleActionMenuGlobal") private var toggleActionMenuGlobal: Bool = true
     @AppStorage("launchAtLogin") private var launchAtLogin: Bool = false
     @AppStorage("enableCleanupTimer") private var enableCleanupTimer: Bool = true
     @State private var showingWalkthroughSheet = false
@@ -1921,14 +1945,6 @@ struct GeneralSettingsTab: View {
                     Toggle("Copy Items When Window Hidden", isOn: $copyWhenHidden)
                         .help("When enabled, clipboard items will be copied even if the window is not visible")
                     Text("When enabled, clipboard items will be copied even if the clipboard window is not visible")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    Divider().padding(.vertical, 8)
-
-                    // Toggle Action Menu Global
-                    Toggle("Toggle Action Menu Globally", isOn: $toggleActionMenuGlobal)
-                        .help("When enabled, action menu shortcut works even when app is not focused")
-                    Text("When enabled, the action menu toggle shortcut works globally even when the app is not in focus")
                         .font(.caption)
                         .foregroundColor(.secondary)
                     Divider().padding(.vertical, 8)
