@@ -11,7 +11,7 @@
 
 **🍎 macOS 13+ • Apple Silicon & Intel • SwiftUI**
 
-[Website](https://nextpaste.app) •
+[Website](https://nextpaste.devlomi.com) •
 [Download](https://github.com/3llomi/NextPaste/releases/) •
 [Report Bug/Request Feature](https://github.com/3llomi/nextpaste/issues) •
 
